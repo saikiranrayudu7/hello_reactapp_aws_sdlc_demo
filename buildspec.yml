@@ -4,7 +4,7 @@ env:
   variables:
     REGION: us-east-1
     REPOSITORY_URI: 779846799257.dkr.ecr.us-east-1.amazonaws.com/hello-reactapp-repo
-    CONTAINER_NAME: react-container
+    CONTAINER_NAME: react-app   # Must match your ECS Container Name
 
 phases:
   install:
@@ -20,6 +20,7 @@ phases:
       - echo Pre-build: Setting up build environment...
       - IMAGE_TAG=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)
       - echo IMAGE_TAG=$IMAGE_TAG
+      - export IMAGE_TAG
 
   build:
     commands:
