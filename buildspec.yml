@@ -12,15 +12,14 @@ phases:
       - echo Logging in to Amazon ECR...
       - aws --version
       - aws ecr get-login-password --region $REGION | docker login --username AWS --password-stdin $REPOSITORY_URI
-      # Fail early if Dockerfile contains rate-limited Docker Hub images
       - echo Checking Dockerfile for disallowed base images...
-      - |
+      - >
         if grep -qE 'FROM\s+(nginx:|node:)' Dockerfile; then
-          echo "ERROR: Dockerfile contains rate-limited Docker Hub images (nginx: or node:)."
-          echo "Please switch to AWS Public ECR images, e.g.:"
-          echo "  FROM public.ecr.aws/docker/library/node:18-alpine"
-          echo "  FROM public.ecr.aws/docker/library/nginx:alpine"
-          exit 1
+          echo "ERROR: Dockerfile contains rate-limited Docker Hub images (nginx: or node:).";
+          echo "Please switch to AWS Public ECR images, e.g.:";
+          echo "  FROM public.ecr.aws/docker/library/node:18-alpine";
+          echo "  FROM public.ecr.aws/docker/library/nginx:alpine";
+          exit 1;
         fi
 
   pre_build:
