@@ -21,7 +21,7 @@ RUN rm -rf /usr/share/nginx/html/*
 # Copy built React app from build stage
 COPY --from=build /app/build /usr/share/nginx/html
 
-# Copy custom nginx config to handle SPA routing (React Router)
+# Copy custom nginx config to handle SPA routing
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 
 # Expose port 80
