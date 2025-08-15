@@ -3,7 +3,7 @@ version: 0.2
 env:
   variables:
     REGION: us-east-1
-    REPOSITORY_URI: 779846799257.dkr.ecr.us-east-1.amazonaws.com/hello-reactapp-repo
+    REPOSITORY_URI: 779846799257.dkr.ecr.us-east-1.amazonaws.com/react-app-repo
     CONTAINER_NAME: react-app   # Must match your ECS Container Name
 
 phases:
