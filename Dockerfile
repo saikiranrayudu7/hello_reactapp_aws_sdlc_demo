@@ -1,31 +1,13 @@
-# -------- Stage 1: Build React app --------
-FROM public.ecr.aws/docker/library/node:18-alpine AS build
-
-# Set working directory
+#Stage 1: Build React app
+FROM node:18-alpine as build
 WORKDIR /app
-
-# Install dependencies only if package.json changes (better caching)
 COPY package*.json ./
-RUN npm ci --no-audit --silent
-
-# Copy everything else and build
+RUN npm install
 COPY . .
 RUN npm run build
 
-# -------- Stage 2: Nginx production server --------
-FROM public.ecr.aws/docker/library/nginx:alpine
-
-# Remove default nginx static files
-RUN rm -rf /usr/share/nginx/html/*
-
-# Copy built React app from build stage
+# Stage 2: Serve with Nginx
+FROM nginx:alpine
 COPY --from=build /app/build /usr/share/nginx/html
-
-# Copy custom nginx config to handle SPA routing (React Router)
-COPY nginx.conf /etc/nginx/conf.d/default.conf
-
-# Expose port 80
 EXPOSE 80
-
-# Start Nginx in foreground
 CMD ["nginx", "-g", "daemon off;"]
