@@ -1,5 +1,5 @@
 # -------- Stage 1: Build React app --------
-FROM node:18-alpine AS build
+FROM public.ecr.aws/docker/library/node:18-alpine AS build
 
 # Set working directory
 WORKDIR /app
@@ -13,7 +13,7 @@ COPY . .
 RUN npm run build
 
 # -------- Stage 2: Nginx production server --------
-FROM nginx:alpine
+FROM public.ecr.aws/docker/library/nginx:alpine
 
 # Remove default nginx static files
 RUN rm -rf /usr/share/nginx/html/*

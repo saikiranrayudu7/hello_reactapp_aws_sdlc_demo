@@ -9,31 +9,41 @@ env:
 phases:
   install:
     commands:
-      - "echo Logging in to Amazon ECR..."
-      - "aws --version"
-      - "aws ecr get-login-password --region $REGION | docker login --username AWS --password-stdin $REPOSITORY_URI"
+      - echo Logging in to Amazon ECR...
+      - aws --version
+      - aws ecr get-login-password --region $REGION | docker login --username AWS --password-stdin $REPOSITORY_URI
+      # Fail early if Dockerfile contains rate-limited Docker Hub images
+      - echo Checking Dockerfile for disallowed base images...
+      - |
+        if grep -qE 'FROM\s+(nginx:|node:)' Dockerfile; then
+          echo "ERROR: Dockerfile contains rate-limited Docker Hub images (nginx: or node:)."
+          echo "Please switch to AWS Public ECR images, e.g.:"
+          echo "  FROM public.ecr.aws/docker/library/node:18-alpine"
+          echo "  FROM public.ecr.aws/docker/library/nginx:alpine"
+          exit 1
+        fi
 
   pre_build:
     commands:
-      - "echo Pre-build: Setting up build environment..."
-      - "IMAGE_TAG=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)"
-      - "echo IMAGE_TAG=$IMAGE_TAG"
-      - "export IMAGE_TAG"
+      - echo Pre-build: Setting up build environment...
+      - IMAGE_TAG=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)
+      - echo IMAGE_TAG=$IMAGE_TAG
+      - export IMAGE_TAG
 
   build:
     commands:
-      - "echo Building the Docker image..."
-      - "docker build -t $REPOSITORY_URI:$IMAGE_TAG ."
-      - "docker tag $REPOSITORY_URI:$IMAGE_TAG $REPOSITORY_URI:latest"
+      - echo Building the Docker image...
+      - docker build -t $REPOSITORY_URI:$IMAGE_TAG .
+      - docker tag $REPOSITORY_URI:$IMAGE_TAG $REPOSITORY_URI:latest
 
   post_build:
     commands:
-      - "echo Pushing Docker images to ECR..."
-      - "docker push $REPOSITORY_URI:$IMAGE_TAG"
-      - "docker push $REPOSITORY_URI:latest"
-      - "echo Writing imagedefinitions.json..."
-      - "printf '[{\"name\":\"%s\",\"imageUri\":\"%s\"}]' $CONTAINER_NAME $REPOSITORY_URI:$IMAGE_TAG > imagedefinitions.json"
-      - "cat imagedefinitions.json"
+      - echo Pushing Docker images to ECR...
+      - docker push $REPOSITORY_URI:$IMAGE_TAG
+      - docker push $REPOSITORY_URI:latest
+      - echo Writing imagedefinitions.json...
+      - printf '[{"name":"%s","imageUri":"%s"}]' $CONTAINER_NAME $REPOSITORY_URI:$IMAGE_TAG > imagedefinitions.json
+      - cat imagedefinitions.json
 
 artifacts:
   files:
