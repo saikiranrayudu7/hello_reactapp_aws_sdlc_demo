@@ -3,7 +3,7 @@ import React from 'react'
 function App() {
   return (
     <div>
-      <h1>Hi Pooja</h1>
+      <h1>Hi AWS</h1>
     </div>
   )
 }
