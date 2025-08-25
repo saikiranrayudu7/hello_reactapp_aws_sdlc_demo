@@ -4,6 +4,7 @@ env:
   variables:
     REGION: us-east-1
     REPOSITORY_URI: 779846799257.dkr.ecr.us-east-1.amazonaws.com/react-app-repo
+    CONTAINER_NAME: react-app
 
 phases:
   install:
