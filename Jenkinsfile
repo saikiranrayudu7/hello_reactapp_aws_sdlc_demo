@@ -10,7 +10,7 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                git branch: 'main', url: 'https://github.com/<your-username>/<your-repo>.git'
+                git branch: 'hello_aws_sdlc_demo', url: 'https://github.com/saikirun7/hello_reactapp_aws_sdlc_demo'
             }
         }
 
