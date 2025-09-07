@@ -1,21 +1,15 @@
 # -------- Stage 1: Build React app --------
 FROM public.ecr.aws/docker/library/node:18-alpine AS build
 
+# Set working directory
 WORKDIR /app
 
-# Install build dependencies for Alpine
-RUN apk add --no-cache python3 make g++ bash
-
-# Copy package.json and package-lock.json
+# Install dependencies only if package.json changes (better caching)
 COPY package*.json ./
+RUN npm ci --no-audit --silent
 
-# Install dependencies with offline fallback
-RUN npm ci --no-audit --offline || npm ci --no-audit
-
-# Copy all other source files
+# Copy everything else and build
 COPY . .
-
-# Build React app
 RUN npm run build
 
 # -------- Stage 2: Nginx production server --------
