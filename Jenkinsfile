@@ -2,41 +2,57 @@ pipeline {
     agent any
 
     environment {
-        REGION = "us-east-1"
-        REPOSITORY_URI = "779846799257.dkr.ecr.us-east-1.amazonaws.com/react-app-repo"
+        AWS_REGION = 'us-east-1'
+        AWS_ACCOUNT_ID = '779846799257'
+        REPO_NAME = 'react-app-repo'
         IMAGE_TAG = "${env.BUILD_NUMBER}"
+        ECR_URL = "${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${REPO_NAME}"
     }
 
     stages {
         stage('Checkout') {
             steps {
-                git branch: 'hello_aws_sdlc_demo', url: 'https://github.com/saikirun7/hello_reactapp_aws_sdlc_demo'
+                checkout scm
             }
         }
 
         stage('Build Docker Image') {
             steps {
-                sh """
-                docker build -t $REPOSITORY_URI:$IMAGE_TAG .
-                docker tag $REPOSITORY_URI:$IMAGE_TAG $REPOSITORY_URI:latest
-                """
+                script {
+                    sh "docker build -t ${REPO_NAME}:${IMAGE_TAG} ."
+                }
             }
         }
 
-        stage('Push Docker Image') {
+        stage('Login to ECR') {
             steps {
-                sh """
-                aws ecr get-login-password --region $REGION | docker login --username AWS --password-stdin $REPOSITORY_URI
-                docker push $REPOSITORY_URI:$IMAGE_TAG
-                docker push $REPOSITORY_URI:latest
-                """
+                script {
+                    sh """
+                        aws ecr get-login-password --region ${AWS_REGION} | \
+                        docker login --username AWS --password-stdin ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com
+                    """
+                }
             }
         }
 
-        stage('Deploy via Ansible') {
+        stage('Tag and Push Image') {
             steps {
-                sh 'ansible-playbook -i ansible/inventory ansible/deploy.yml'
+                script {
+                    sh """
+                        docker tag ${REPO_NAME}:${IMAGE_TAG} ${ECR_URL}:${IMAGE_TAG}
+                        docker push ${ECR_URL}:${IMAGE_TAG}
+                    """
+                }
             }
+        }
+    }
+
+    post {
+        success {
+            echo "✅ Successfully pushed ${ECR_URL}:${IMAGE_TAG}"
+        }
+        failure {
+            echo "❌ Build failed!"
         }
     }
 }
