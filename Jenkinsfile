@@ -48,27 +48,28 @@ pipeline {
         }
 
         stage('Tag & Push Image') {
-            steps {
-                script {
-                    def versionedImage = "$AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$REPO_NAME:$IMAGE_TAG"
-                    def latestImage = "$AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$REPO_NAME:latest"
+    steps {
+        script {
+            def versionedImage = "${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${REPO_NAME}:${IMAGE_TAG}"
+            def latestImage = "${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${REPO_NAME}:latest"
 
-                    // Push versioned image
-                    echo "Tagging and pushing versioned image: $versionedImage"
-                    sh """
-                        docker tag $REPO_NAME:$IMAGE_TAG $versionedImage
-                        docker push $versionedImage
-                    """
+            // Push versioned image
+            echo "Tagging and pushing versioned image: $versionedImage"
+            sh """
+                docker tag $REPO_NAME:$IMAGE_TAG $versionedImage
+                docker push $versionedImage
+            """
 
-                    // Push latest tag
-                    echo "Tagging and pushing latest image: $latestImage"
-                    sh """
-                        docker tag $REPO_NAME:$IMAGE_TAG $latestImage
-                        docker push $latestImage
-                    """
-                }
-            }
+            // Push latest tag
+            echo "Tagging and pushing latest image: $latestImage"
+            sh """
+                docker tag $REPO_NAME:$IMAGE_TAG $latestImage
+                docker push $latestImage
+            """
         }
+    }
+}
+
     }
 
     post {
