@@ -27,7 +27,7 @@ pipeline:
                     connectorRef: AWS_Connector
                     region: us-east-1
                     account: "779846799257"
-                    imageName: react-app
+                    imageName: react-app-repo
                     tags:
                       - latest
                     caching: true
