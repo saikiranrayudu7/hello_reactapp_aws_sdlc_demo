@@ -1,0 +1,14 @@
+inputSet:
+  name: Build_hello_reactapp_aws_sdlc_demo_1761590496345-pr-trigger-input-set
+  identifier: Build_hello_reactapp_aws_sdlc_demo_1761590496345prtriggerinputset
+  orgIdentifier: default
+  projectIdentifier: reactapp
+  pipeline:
+    identifier: Build_hello_reactapp_aws_sdlc_demo_1761590496345
+    properties:
+      ci:
+        codebase:
+          build:
+            type: PR
+            spec:
+              number: <+trigger.prNumber>
