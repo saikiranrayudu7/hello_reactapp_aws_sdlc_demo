@@ -18,7 +18,12 @@ pipeline {
         stage('Build Docker Image') {
             steps {
                 script {
-                    sh 'docker build -t $REPO_NAME:$IMAGE_TAG .'
+                    //sh 'docker build -t $REPO_NAME:$IMAGE_TAG .'
+                    // Build Docker image using the Dockerfile in the same directory
+                    sh '''
+                    echo "Building Docker image using local Dockerfile..."
+                    docker build -t $REPO_NAME:$IMAGE_TAG -f Dockerfile .
+                    '''
                 }
             }
         }
