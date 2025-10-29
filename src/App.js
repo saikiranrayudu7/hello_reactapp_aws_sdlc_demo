@@ -4,7 +4,7 @@ function App() {
   return (
     <div>
       <h1>I completed AWS Certification.</h1>
-      <h1>I created multiple pipeline</h1>
+      <h1>I created multiple pipelines</h1>
     </div>
   )
 }
