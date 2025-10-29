@@ -19,12 +19,25 @@ pipeline:
                   spec:
                     shell: Sh
                     command: echo "Welcome to Harness CI"
+              - step:
+                  type: BuildAndPushECR
+                  name: BuildAndPushECR_1
+                  identifier: BuildAndPushECR_1
+                  spec:
+                    connectorRef: AWS
+                    region: us-east-1
+                    account: "779846799257"
+                    imageName: react-app-repo
+                    tags:
+                      - latest
+                    caching: false
           platform:
             os: Linux
             arch: Amd64
           runtime:
             type: Cloud
             spec: {}
+        description: ""
   properties:
     ci:
       codebase:
