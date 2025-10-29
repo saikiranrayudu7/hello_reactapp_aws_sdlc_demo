@@ -5,8 +5,7 @@ pipeline {
         AWS_REGION = 'us-east-1'
         AWS_ACCOUNT_ID = '779846799257'
         REPO_NAME = 'react-app-repo'
-        BUILD_TAG = "${env.BUILD_NUMBER}"
-        IMAGE_LATEST = "latest"
+        IMAGE_TAG = "latest"
     }
 
     stages {
@@ -19,9 +18,12 @@ pipeline {
         stage('Build Docker Image') {
             steps {
                 script {
+                    // Use Jenkins BUILD_ID as a unique tag and disable cache
+                    def uniqueTag = "${BUILD_ID}"
+
                     sh '''
-                    echo "Building Docker image using local Dockerfile..."
-                    docker build -t $REPO_NAME:$BUILD_TAG -t $REPO_NAME:$IMAGE_LATEST -f Dockerfile .
+                    echo "Building Docker image without cache..."
+                    docker build --no-cache -t $REPO_NAME:${BUILD_ID} -t $REPO_NAME:$IMAGE_TAG -f Dockerfile .
                     '''
                 }
             }
@@ -41,11 +43,12 @@ pipeline {
             steps {
                 script {
                     sh '''
-                    docker tag $REPO_NAME:$BUILD_TAG $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$REPO_NAME:$BUILD_TAG
-                    docker tag $REPO_NAME:$IMAGE_LATEST $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$REPO_NAME:$IMAGE_LATEST
+                    echo "Tagging and pushing image to ECR..."
+                    docker tag $REPO_NAME:${BUILD_ID} $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$REPO_NAME:${BUILD_ID}
+                    docker tag $REPO_NAME:$IMAGE_TAG $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$REPO_NAME:$IMAGE_TAG
 
-                    docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$REPO_NAME:$BUILD_TAG
-                    docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$REPO_NAME:$IMAGE_LATEST
+                    docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$REPO_NAME:${BUILD_ID}
+                    docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$REPO_NAME:$IMAGE_TAG
                     '''
                 }
             }
@@ -54,7 +57,8 @@ pipeline {
 
     post {
         always {
-            echo "Pipeline execution completed! Image tags pushed: $BUILD_TAG and latest"
+            echo "Pipeline execution completed!"
+            echo "✅ Image pushed to ECR with tags: ${BUILD_ID} and latest"
         }
     }
 }
