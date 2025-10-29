@@ -5,7 +5,8 @@ pipeline {
         AWS_REGION = 'us-east-1'
         AWS_ACCOUNT_ID = '779846799257'
         REPO_NAME = 'react-app-repo'
-        IMAGE_TAG = "latest"
+        BUILD_TAG = "${env.BUILD_NUMBER}"
+        IMAGE_LATEST = "latest"
     }
 
     stages {
@@ -18,11 +19,9 @@ pipeline {
         stage('Build Docker Image') {
             steps {
                 script {
-                    //sh 'docker build -t $REPO_NAME:$IMAGE_TAG .'
-                    // Build Docker image using the Dockerfile in the same directory
                     sh '''
                     echo "Building Docker image using local Dockerfile..."
-                    docker build -t $REPO_NAME:$IMAGE_TAG -f Dockerfile .
+                    docker build -t $REPO_NAME:$BUILD_TAG -t $REPO_NAME:$IMAGE_LATEST -f Dockerfile .
                     '''
                 }
             }
@@ -42,8 +41,11 @@ pipeline {
             steps {
                 script {
                     sh '''
-                    docker tag $REPO_NAME:$IMAGE_TAG $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$REPO_NAME:$IMAGE_TAG
-                    docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$REPO_NAME:$IMAGE_TAG
+                    docker tag $REPO_NAME:$BUILD_TAG $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$REPO_NAME:$BUILD_TAG
+                    docker tag $REPO_NAME:$IMAGE_LATEST $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$REPO_NAME:$IMAGE_LATEST
+
+                    docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$REPO_NAME:$BUILD_TAG
+                    docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$REPO_NAME:$IMAGE_LATEST
                     '''
                 }
             }
@@ -52,7 +54,7 @@ pipeline {
 
     post {
         always {
-            echo 'Pipeline execution completed!'
+            echo "Pipeline execution completed! Image tags pushed: $BUILD_TAG and latest"
         }
     }
 }
