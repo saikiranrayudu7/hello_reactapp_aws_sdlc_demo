@@ -9,20 +9,24 @@ env:
 phases:
   install:
     commands:
-      - echo "Logging in to Amazon ECR..."
-      - aws --version
+      - echo "Installing kubectl & dependencies..."
+      - curl -o kubectl https://amazon-eks.s3.us-west-2.amazonaws.com/1.27.0/2023-07-05/bin/linux/amd64/kubectl
+      - chmod +x ./kubectl
+      - mv ./kubectl /usr/local/bin
+
+      - echo "Logging into Amazon ECR..."
       - aws ecr get-login-password --region $REGION | docker login --username AWS --password-stdin $REPOSITORY_URI
 
   pre_build:
     commands:
-      - echo "Pre-build: Setting up build environment..."
+      - echo "Preparing build environment..."
       - IMAGE_TAG=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)
       - echo IMAGE_TAG=$IMAGE_TAG
       - export IMAGE_TAG
 
   build:
     commands:
-      - echo "Building the Docker image..."
+      - echo "Building Docker image..."
       - docker build -t $REPOSITORY_URI:$IMAGE_TAG .
       - docker tag $REPOSITORY_URI:$IMAGE_TAG $REPOSITORY_URI:latest
 
@@ -32,10 +36,10 @@ phases:
       - docker push $REPOSITORY_URI:$IMAGE_TAG
       - docker push $REPOSITORY_URI:latest
 
-      - echo "Configuring kubectl for EKS..."
+      - echo "Configuring kubectl..."
       - aws eks update-kubeconfig --name $CLUSTER_NAME --region $REGION
 
-      - echo "Updating Kubernetes manifests with new image..."
+      - echo "Updating manifest with new image tag..."
       - sed -i "s|IMAGE_URI|$REPOSITORY_URI:$IMAGE_TAG|g" k8s/deployment.yaml
 
       - echo "Deploying to EKS..."
@@ -43,4 +47,4 @@ phases:
 
 artifacts:
   files:
-    - "**/*"
+    - '**/*'
