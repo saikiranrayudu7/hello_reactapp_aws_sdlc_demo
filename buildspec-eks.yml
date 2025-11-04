@@ -40,7 +40,7 @@ phases:
       - aws eks update-kubeconfig --name $CLUSTER_NAME --region $REGION
 
       - echo "Updating manifest with new image tag..."
-      - sed -i "s|IMAGE_URI|$REPOSITORY_URI:$IMAGE_TAG|g" k8s/deployment.yaml
+      - sed -i "s|IMAGE_URI|$REPOSITORY_URI:$IMAGE_TAG|g" k8s/*.yaml
 
       - echo "Deploying to EKS..."
       - kubectl apply -f k8s/
