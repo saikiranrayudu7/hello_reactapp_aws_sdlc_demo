@@ -3,7 +3,7 @@ version: 0.2
 env:
   variables:
     REGION: us-east-1
-    CLUSTER_NAME: my-eks-cluster
+    CLUSTER_NAME: devops-cluster
     REPOSITORY_URI: 779846799257.dkr.ecr.us-east-1.amazonaws.com/react-app-repo
 
 phases:
