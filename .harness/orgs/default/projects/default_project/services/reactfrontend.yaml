@@ -1,8 +1,0 @@
-service:
-  name: react-frontend
-  identifier: reactfrontend
-  orgIdentifier: default
-  projectIdentifier: default_project
-  serviceDefinition:
-    spec: {}
-    type: Kubernetes
