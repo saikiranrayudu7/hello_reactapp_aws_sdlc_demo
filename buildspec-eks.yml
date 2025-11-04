@@ -10,9 +10,14 @@ phases:
   install:
     commands:
       - echo "Installing kubectl..."
-      - curl -o kubectl https://amazon-eks.s3.us-west-2.amazonaws.com/1.27.0/2023-07-05/bin/linux/amd64/kubectl
-      - chmod +x ./kubectl
-      - mv ./kubectl /usr/local/bin
+      - curl -LO "https://amazon-eks.s3.us-west-2.amazonaws.com/1.27.0/2023-07-05/bin/linux/amd64/kubectl"
+      - chmod +x kubectl
+      - mv kubectl /usr/local/bin/kubectl
+
+      - echo "Installing aws-iam-authenticator..."
+      - curl -LO "https://amazon-eks.s3.us-west-2.amazonaws.com/1.27.0/2023-07-05/bin/linux/amd64/aws-iam-authenticator"
+      - chmod +x aws-iam-authenticator
+      - mv aws-iam-authenticator /usr/local/bin/aws-iam-authenticator
 
       - echo "Logging into Amazon ECR..."
       - aws ecr get-login-password --region $REGION | docker login --username AWS --password-stdin $REPOSITORY_URI
@@ -40,7 +45,7 @@ phases:
       - aws eks update-kubeconfig --name $CLUSTER_NAME --region $REGION
 
       - echo "Replacing image tag in manifests..."
-      - sed -i "s|IMAGE_URI|$REPOSITORY_URI:$IMAGE_TAG|g" k8s/react-deployment.yaml
+      - sed -i "s|IMAGE_URI|$REPOSITORY_URI:$IMAGE_TAG|g" k8s/*.yaml
 
       - echo "Deploying to EKS..."
       - kubectl apply -f k8s/
