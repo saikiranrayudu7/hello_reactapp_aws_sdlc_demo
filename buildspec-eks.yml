@@ -22,6 +22,8 @@ phases:
       - echo "Logging into Amazon ECR..."
       - aws ecr get-login-password --region $REGION | docker login --username AWS --password-stdin $REPOSITORY_URI
 
+      - kubectl version --client  # Debug — remove after success
+
   pre_build:
     commands:
       - echo "Preparing build environment..."
