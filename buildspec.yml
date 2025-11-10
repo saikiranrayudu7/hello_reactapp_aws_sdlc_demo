@@ -26,18 +26,18 @@ phases:
       - docker build -t $REPOSITORY_URI:$IMAGE_TAG .
       - docker tag $REPOSITORY_URI:$IMAGE_TAG $REPOSITORY_URI:latest
 
-  post_build:
-    commands:
-      - echo "Pushing Docker images to ECR..."
-      - docker push $REPOSITORY_URI:$IMAGE_TAG
-      - docker push $REPOSITORY_URI:latest
-      - echo "Writing imagedefinitions.json..."
-      - printf '[{"name":"%s","imageUri":"%s"}]' $CONTAINER_NAME $REPOSITORY_URI:$IMAGE_TAG > imagedefinitions.json
-      - echo "Updating deployment image tag in k8s/deployment.yaml..."
-      - sed -i "s|image: .*|image: ${REPOSITORY_URI}:${IMAGE_TAG}|g" k8s/deployment.yaml
-      - echo "Listing Kubernetes manifests..."
-      - ls -la k8s || true
-      - echo "Post-build phase complete."
+post_build:
+  commands:
+    - echo "Pushing Docker images to ECR..."
+    - docker push $REPOSITORY_URI:$IMAGE_TAG
+    - docker push $REPOSITORY_URI:latest
+    - echo "Writing imagedefinitions.json..."
+    - printf '[{"name":"%s","imageUri":"%s"}]' $CONTAINER_NAME $REPOSITORY_URI:$IMAGE_TAG > imagedefinitions.json
+    - echo "Updating deployment image tag in k8s/deployment.yaml..."
+    - 'sed -i "s|image: .*|image: ${REPOSITORY_URI}:${IMAGE_TAG}|g" k8s/deployment.yaml'
+    - echo "Listing Kubernetes manifests..."
+    - ls -la k8s || true
+    - echo "Post-build phase complete."
 
 artifacts:
   files:
