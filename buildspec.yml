@@ -31,19 +31,21 @@ phases:
       - "docker push $REPOSITORY_URI:$IMAGE_TAG"
       - "docker push $REPOSITORY_URI:latest"
       
-      # 💥 EKS/Kubernetes Specific Step 💥
-      - "echo Updating Kubernetes deployment file with new image tag..."
-      # This sed command is now looking inside the 'k8s' folder
-      - "sed -i 's|PLACEHOLDER_IMAGE|$REPOSITORY_URI:$IMAGE_TAG|g' k8s/deployment.yaml"
+      # 💥 EKS/Kubernetes Specific Step - REPLACING THE ENTIRE LINE 💥
+      - "echo Updating Kubernetes deployment file with new image tag ($IMAGE_TAG)..."
+      # FIX 2: Replace the entire 'image: ...' line to ensure the unique tag is injected.
+      - "sed -i \"/image:/c\\          image: $REPOSITORY_URI:$IMAGE_TAG\" k8s/deployment.yaml"
+      
+      - "echo --- Content of k8s/deployment.yaml (Verification) ---"
       - "cat k8s/deployment.yaml" # Output file content for verification
 
-      # ✅ NEW COMMAND: Use ls to list all files included in the artifact
-      - "echo Listing all K8s YAML files packaged as artifacts:"
+      # ✅ Listing all K8s YAML files packaged as artifacts:
+      - "echo --- Artifacts found in k8s/ ---"
       - "ls k8s/*.yaml"
 
 artifacts:
   files:
-    # Using the wildcard k8s/*.yaml to include all your manifests
-    - 'k8s/*.yaml'
-  # base-directory is optional, but helps keep the artifact tidy
+    # ✅ FIX 1: Change to '*.yaml' because base-directory is set to 'k8s'
+    - '*.yaml'
+  # The base-directory tells CodeBuild where to look for the files in the 'files' list.
   base-directory: 'k8s'
