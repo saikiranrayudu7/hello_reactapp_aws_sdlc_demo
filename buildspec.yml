@@ -34,7 +34,7 @@ phases:
       # 💥 EKS/Kubernetes Specific Step 💥
       - "echo Updating Kubernetes deployment file with new image tag..."
       # Use 'sed' to replace the image placeholder in your deployment.yaml file
-      - "sed -i 's|PLACEHOLDER_IMAGE|$REPOSITORY_URI:$IMAGE_TAG|g' kubernetes/deployment.yaml"
+      - "sed -i 's|PLACEHOLDER_IMAGE|$REPOSITORY_URI:$IMAGE_TAG|g' k8s/deployment.yaml"
       - "cat kubernetes/deployment.yaml" # Output file content for verification
 
 artifacts:
