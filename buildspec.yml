@@ -5,7 +5,7 @@ env:
     REGION: us-east-1
     REPOSITORY_URI: 779846799257.dkr.ecr.us-east-1.amazonaws.com/react-app-repo
     CONTAINER_NAME: react-app
-    CLUSTER_NAME: react-app-test # change if needed
+    CLUSTER_NAME: react-demo-cluster
     K8S_PATH: k8s/deployment.yaml
 
 phases:
@@ -32,17 +32,20 @@ phases:
       - docker build -t $REPOSITORY_URI:$IMAGE_TAG .
       - docker tag $REPOSITORY_URI:$IMAGE_TAG $REPOSITORY_URI:latest
 
-post_build:
-  commands:
-    - echo Pushing Docker images to ECR...
-    - docker push $REPOSITORY_URI:$IMAGE_TAG
-    - docker push $REPOSITORY_URI:latest
-    - echo Updating Kubernetes manifests with new image tag...
-    - 'sed -i "s|image: .*|image: ${REPOSITORY_URI}:${IMAGE_TAG}|g" $K8S_PATH'
-    - echo Authenticating to EKS cluster...
-    - aws eks update-kubeconfig --name $CLUSTER_NAME --region $REGION
-    - echo Deploying to EKS...
-    - kubectl apply -f $K8S_PATH
+  post_build:
+    commands:
+      - echo Pushing Docker images to ECR...
+      - docker push $REPOSITORY_URI:$IMAGE_TAG
+      - docker push $REPOSITORY_URI:latest
+      - echo Updating Kubernetes manifests with new image tag...
+      - 'sed -i "s|image: .*|image: ${REPOSITORY_URI}:${IMAGE_TAG}|g" $K8S_PATH'
+      - echo Authenticating to EKS cluster...
+      - aws eks update-kubeconfig --name $CLUSTER_NAME --region $REGION
+      - echo Deploying to EKS...
+      - kubectl apply -f $K8S_PATH
+      - kubectl rollout status deployment/react-app-deployment
+      - echo Writing imagedefinitions.json...
+      - printf '[{"name":"%s","imageUri":"%s"}]' $CONTAINER_NAME $REPOSITORY_URI:$IMAGE_TAG > imagedefinitions.json
 
 artifacts:
   files:
