@@ -33,11 +33,17 @@ phases:
       
       # 💥 EKS/Kubernetes Specific Step 💥
       - "echo Updating Kubernetes deployment file with new image tag..."
-      # Use 'sed' to replace the image placeholder in your deployment.yaml file
+      # This sed command is now looking inside the 'k8s' folder
       - "sed -i 's|PLACEHOLDER_IMAGE|$REPOSITORY_URI:$IMAGE_TAG|g' k8s/deployment.yaml"
       - "cat k8s/deployment.yaml" # Output file content for verification
 
+      # ✅ NEW COMMAND: Use ls to list all files included in the artifact
+      - "echo Listing all K8s YAML files packaged as artifacts:"
+      - "ls k8s/*.yaml"
+
 artifacts:
   files:
-    # Pass the updated Kubernetes manifest as the artifact for the deployment stage
-    - k8s/deployment.yaml
+    # Using the wildcard k8s/*.yaml to include all your manifests
+    - 'k8s/*.yaml'
+  # base-directory is optional, but helps keep the artifact tidy
+  base-directory: 'k8s'
