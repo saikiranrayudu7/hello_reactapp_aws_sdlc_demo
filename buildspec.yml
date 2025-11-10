@@ -9,33 +9,35 @@ env:
 phases:
   install:
     commands:
-      - echo Logging in to Amazon ECR...
+      - echo "Logging in to Amazon ECR..."
       - aws --version
       - aws ecr get-login-password --region $REGION | docker login --username AWS --password-stdin $REPOSITORY_URI
 
   pre_build:
     commands:
-      - echo Pre-build: Setting up build environment...
+      - echo "Pre-build: Setting up build environment..."
       - IMAGE_TAG=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)
-      - echo IMAGE_TAG=$IMAGE_TAG
+      - echo "IMAGE_TAG=$IMAGE_TAG"
       - export IMAGE_TAG
 
   build:
     commands:
-      - echo Building the Docker image...
+      - echo "Building the Docker image..."
       - docker build -t $REPOSITORY_URI:$IMAGE_TAG .
       - docker tag $REPOSITORY_URI:$IMAGE_TAG $REPOSITORY_URI:latest
 
   post_build:
     commands:
-      - echo Pushing Docker images to ECR...
+      - echo "Pushing Docker images to ECR..."
       - docker push $REPOSITORY_URI:$IMAGE_TAG
       - docker push $REPOSITORY_URI:latest
-      - echo Writing imagedefinitions.json...
+      - echo "Writing imagedefinitions.json..."
       - printf '[{"name":"%s","imageUri":"%s"}]' $CONTAINER_NAME $REPOSITORY_URI:$IMAGE_TAG > imagedefinitions.json
-      - echo Listing Kubernetes manifest files...
+      - echo "Updating deployment image tag in k8s/deployment.yaml..."
+      - sed -i "s|image: .*|image: ${REPOSITORY_URI}:${IMAGE_TAG}|g" k8s/deployment.yaml
+      - echo "Listing Kubernetes manifests..."
       - ls -la k8s || true
-      - echo Post build complete.
+      - echo "Post-build phase complete."
 
 artifacts:
   files:
