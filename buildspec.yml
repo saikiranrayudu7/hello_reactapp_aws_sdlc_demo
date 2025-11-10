@@ -4,41 +4,40 @@ env:
     REGION: us-east-1
     REPOSITORY_URI: 779846799257.dkr.ecr.us-east-1.amazonaws.com/react-app-repo
     CONTAINER_NAME: react-app
-
 phases:
   install:
     commands:
-      - echo Logging in to Amazon ECR...
-      - aws --version
-      - aws ecr get-login-password --region $REGION | docker login --username AWS --password-stdin $REPOSITORY_URI
-      - echo Installing kubectl...
-      - curl -o kubectl https://amazon-eks.s3.us-west-2.amazonaws.com/1.27.1/2023-04-19/bin/linux/amd64/kubectl
-      - chmod +x ./kubectl
-      - mv ./kubectl /usr/local/bin/kubectl
-
+      - "echo Logging in to Amazon ECR..."
+      - "aws --version"
+      # Log in to ECR
+      - "aws ecr get-login-password --region $REGION | docker login --username AWS --password-stdin $REPOSITORY_URI"
   pre_build:
     commands:
-      - echo Pre-build: Setting up build environment...
-      - IMAGE_TAG=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)
-      - echo IMAGE_TAG=$IMAGE_TAG
-      - export IMAGE_TAG
-
+      - "echo Pre-build: Setting up build environment..."
+      # Use the short commit hash as the image tag
+      - "IMAGE_TAG=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)"
+      - "echo IMAGE_TAG=$IMAGE_TAG"
+      - "export IMAGE_TAG"
   build:
     commands:
-      - echo Building the Docker image...
-      - docker build -t $REPOSITORY_URI:$IMAGE_TAG .
-      - docker tag $REPOSITORY_URI:$IMAGE_TAG $REPOSITORY_URI:latest
-
+      - "echo Building the Docker image..."
+      # Build the image with the unique tag
+      - "docker build -t $REPOSITORY_URI:$IMAGE_TAG ."
+      # Tag the image as latest
+      - "docker tag $REPOSITORY_URI:$IMAGE_TAG $REPOSITORY_URI:latest"
   post_build:
     commands:
-      - echo Pushing Docker images to ECR...
-      - docker push $REPOSITORY_URI:$IMAGE_TAG
-      - docker push $REPOSITORY_URI:latest
-      - echo Updating Kubernetes manifest with new image...
-      - 'sed -i "s|image: .*|image: ${REPOSITORY_URI}:${IMAGE_TAG}|g" k8s/deployment.yaml'
-      - cat k8s/deployment.yaml
-      - echo Applying manifest to EKS...
-      - aws eks update-kubeconfig --region $REGION --name your-eks-cluster-name
-      - kubectl apply -f k8s/deployment.yaml
-      - kubectl rollout status deployment/$CONTAINER_NAME
-      - echo "Deployment successful!"
+      - "echo Pushing Docker images to ECR..."
+      - "docker push $REPOSITORY_URI:$IMAGE_TAG"
+      - "docker push $REPOSITORY_URI:latest"
+      
+      # 💥 EKS/Kubernetes Specific Step 💥
+      - "echo Updating Kubernetes deployment file with new image tag..."
+      # Use 'sed' to replace the image placeholder in your deployment.yaml file
+      - "sed -i 's|PLACEHOLDER_IMAGE|$REPOSITORY_URI:$IMAGE_TAG|g' kubernetes/deployment.yaml"
+      - "cat kubernetes/deployment.yaml" # Output file content for verification
+
+artifacts:
+  files:
+    # Pass the updated Kubernetes manifest as the artifact for the deployment stage
+    - k8s/deployment.yaml
