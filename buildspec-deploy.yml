@@ -10,36 +10,38 @@ env:
 phases:
   install:
     commands:
+      - set -e
       - echo "🟢 INSTALL PHASE: starting..."
       - echo "Installing kubectl..."
       - curl -o kubectl https://amazon-eks.s3.us-west-2.amazonaws.com/1.29.0/2024-04-19/bin/linux/amd64/kubectl
       - chmod +x ./kubectl
       - mv ./kubectl /usr/local/bin/
+      - echo "Verifying kubectl installation..."
       - kubectl version --client
-      - echo "🟢 INSTALL PHASE: completed successfully!"
+      - echo "✅ INSTALL PHASE: kubectl setup complete."
   pre_build:
     commands:
       - echo "🟢 PRE-BUILD PHASE: starting..."
       - echo "Setting up kubeconfig for EKS cluster..."
       - aws eks update-kubeconfig --region $REGION --name $CLUSTER_NAME
-      - echo "🟢 PRE-BUILD PHASE: kubeconfig setup done!"
+      - echo "✅ PRE-BUILD PHASE: kubeconfig configured successfully."
   build:
     commands:
-      - echo "🟢 BUILD PHASE: starting deployment simulation..."
-      - echo "Fetching latest image tag from ECR..."
+      - echo "🟢 BUILD PHASE: starting EKS deployment..."
       - |
+        echo "Fetching latest image tag from ECR..."
         IMAGE_TAG=$(aws ecr describe-images \
         --repository-name react-app-repo \
         --query 'sort_by(imageDetails,& imagePushedAt)[-1].imageTags[0]' \
         --output text)
         echo "✅ Using image tag: $IMAGE_TAG"
-      - echo "Updating deployment file image..."
-      - sed -i "s|image: .*|image: ${REPOSITORY_URI}:${IMAGE_TAG}|g" k8s/deployment.yaml
-      - echo "✅ Applying Kubernetes manifests..."
-      - kubectl apply -f k8s --recursive
-      - echo "✅ Checking deployment rollout..."
-      - kubectl rollout status deployment/$DEPLOYMENT_NAME
-      - echo "🟢 BUILD PHASE: deployment script finished!"
+        echo "Patching Kubernetes deployment YAML with new image..."
+        sed -i "s|image: .*|image: ${REPOSITORY_URI}:${IMAGE_TAG}|g" k8s/deployment.yaml
+        echo "✅ Applying Kubernetes manifests..."
+        kubectl apply -f k8s --recursive
+        echo "✅ Waiting for rollout to complete..."
+        kubectl rollout status deployment/$DEPLOYMENT_NAME
+      - echo "✅ BUILD PHASE: deployment steps executed successfully."
   post_build:
     commands:
       - echo "🎯 POST-BUILD PHASE: EKS Deployment Successful!"
