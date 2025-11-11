@@ -10,24 +10,23 @@ phases:
   install:
     commands:
       - echo "Logging in to Amazon ECR..."
-      - aws --version
       - aws ecr get-login-password --region $REGION | docker login --username AWS --password-stdin $REPOSITORY_URI
   pre_build:
     commands:
-      - echo "Preparing build environment..."
       - IMAGE_TAG=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)
       - echo "IMAGE_TAG=$IMAGE_TAG"
       - export IMAGE_TAG
   build:
     commands:
-      - echo "Building the Docker image..."
+      - echo "Building Docker image..."
       - docker build -t $REPOSITORY_URI:$IMAGE_TAG .
       - docker tag $REPOSITORY_URI:$IMAGE_TAG $REPOSITORY_URI:latest
   post_build:
     commands:
-      - echo "Pushing Docker images to ECR..."
+      - echo "Pushing Docker images..."
       - docker push $REPOSITORY_URI:$IMAGE_TAG
       - docker push $REPOSITORY_URI:latest
-      - echo "Docker image pushed successfully."
+      - echo "Build complete!"
 artifacts:
-  files: []
+  files:
+    - '**/*'
