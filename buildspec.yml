@@ -1,51 +1,33 @@
+---
 version: 0.2
 env:
   variables:
     REGION: us-east-1
     REPOSITORY_URI: 779846799257.dkr.ecr.us-east-1.amazonaws.com/react-app-repo
     CONTAINER_NAME: react-app
+
 phases:
   install:
     commands:
-      - "echo Logging in to Amazon ECR..."
-      - "aws --version"
-      # Log in to ECR
-      - "aws ecr get-login-password --region $REGION | docker login --username AWS --password-stdin $REPOSITORY_URI"
+      - echo "Logging in to Amazon ECR..."
+      - aws --version
+      - aws ecr get-login-password --region $REGION | docker login --username AWS --password-stdin $REPOSITORY_URI
   pre_build:
     commands:
-      - "echo Pre-build: Setting up build environment..."
-      # Use the short commit hash as the image tag
-      - "IMAGE_TAG=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)"
-      - "echo IMAGE_TAG=$IMAGE_TAG"
-      - "export IMAGE_TAG"
+      - echo "Preparing build environment..."
+      - IMAGE_TAG=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)
+      - echo "IMAGE_TAG=$IMAGE_TAG"
+      - export IMAGE_TAG
   build:
     commands:
-      - "echo Building the Docker image..."
-      # Build the image with the unique tag
-      - "docker build -t $REPOSITORY_URI:$IMAGE_TAG ."
-      # Tag the image as latest
-      - "docker tag $REPOSITORY_URI:$IMAGE_TAG $REPOSITORY_URI:latest"
+      - echo "Building the Docker image..."
+      - docker build -t $REPOSITORY_URI:$IMAGE_TAG .
+      - docker tag $REPOSITORY_URI:$IMAGE_TAG $REPOSITORY_URI:latest
   post_build:
     commands:
-      - "echo Pushing Docker images to ECR..."
-      - "docker push $REPOSITORY_URI:$IMAGE_TAG"
-      - "docker push $REPOSITORY_URI:latest"
-      
-      # 💥 EKS/Kubernetes Specific Step - REPLACING THE ENTIRE LINE 💥
-      - "echo Updating Kubernetes deployment file with new image tag ($IMAGE_TAG)..."
-      # FIX 2: Replace the entire 'image: ...' line to ensure the unique tag is injected.
-      - "sed -i \"/image:/c\\          image: $REPOSITORY_URI:$IMAGE_TAG\" k8s/deployment.yaml"
-      
-      - "echo --- Content of k8s/deployment.yaml (Verification) ---"
-      - "cat k8s/deployment.yaml" # Output file content for verification
-
-      # ✅ Listing all K8s YAML files packaged as artifacts:
-      - "echo --- Artifacts found in k8s/ ---"
-      - "ls k8s/*.yaml"
-
+      - echo "Pushing Docker images to ECR..."
+      - docker push $REPOSITORY_URI:$IMAGE_TAG
+      - docker push $REPOSITORY_URI:latest
+      - echo "Docker image pushed successfully."
 artifacts:
-  files:
-    # ✅ FIX 1: Change to '*.yaml' because base-directory is set to 'k8s'
-    - '*.yaml'
-  # The base-directory tells CodeBuild where to look for the files in the 'files' list.
-  base-directory: 'k8s'
+  files: []

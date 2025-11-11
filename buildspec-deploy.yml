@@ -1,0 +1,35 @@
+---
+version: 0.2
+env:
+  variables:
+    REGION: us-east-1
+    CLUSTER_NAME: react-app-cluster
+    REPOSITORY_URI: 779846799257.dkr.ecr.us-east-1.amazonaws.com/react-app-repo
+    CONTAINER_NAME: react-app
+
+phases:
+  install:
+    commands:
+      - echo "Installing kubectl..."
+      - curl -o kubectl https://amazon-eks.s3.us-west-2.amazonaws.com/1.29.0/2024-04-19/bin/linux/amd64/kubectl
+      - chmod +x ./kubectl
+      - mv ./kubectl /usr/local/bin/
+      - echo "Verifying kubectl..."
+      - kubectl version --client
+  pre_build:
+    commands:
+      - echo "Setting up kubeconfig..."
+      - aws eks update-kubeconfig --region $REGION --name $CLUSTER_NAME
+  build:
+    commands:
+      - echo "Deploying to EKS..."
+      - IMAGE_TAG=$(aws ecr describe-images --repository-name react-app-repo --query 'sort_by(imageDetails,& imagePushedAt)[-1].imageTags[0]' --output text)
+      - echo "Using image tag: $IMAGE_TAG"
+      - 'sed -i "s|image: .*|image: ${REPOSITORY_URI}:${IMAGE_TAG}|g" k8s/deployment.yaml'
+      - kubectl apply -f k8s/
+      - kubectl rollout status deployment/$CONTAINER_NAME
+  post_build:
+    commands:
+      - echo "Deployment successful!"
+artifacts:
+  files: []
