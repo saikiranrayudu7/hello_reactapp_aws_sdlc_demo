@@ -11,9 +11,12 @@ phases:
   install:
     commands:
       - echo "Installing kubectl and aws-iam-authenticator..."
+      # This fixes the corrupted kubectl binary
       - curl -LO https://dl.k8s.io/release/v1.29.0/bin/linux/amd64/kubectl
       - chmod +x ./kubectl && mv ./kubectl /usr/local/bin/
-      - curl -Lo aws-iam-authenticator https://amazon-eks.s3.us-west-2.amazonaws.com/1.29.0/2024-06-14/bin/linux/amd64/aws-iam-authenticator
+      
+      # FIX: Use reliable GitHub release link for aws-iam-authenticator
+      - curl -Lo aws-iam-authenticator https://github.com/kubernetes-sigs/aws-iam-authenticator/releases/download/v0.7.8/aws-iam-authenticator_0.7.8_linux_amd64
       - chmod +x aws-iam-authenticator && mv aws-iam-authenticator /usr/local/bin/
       - echo "✅ Installation complete"
 
