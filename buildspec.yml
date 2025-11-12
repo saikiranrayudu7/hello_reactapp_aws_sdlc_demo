@@ -40,22 +40,22 @@ phases:
       - echo "✅ Image pushed successfully."
 
   post_build:
-  commands:
-    - echo "🔗 Connecting to EKS cluster..."
-    - aws eks update-kubeconfig --region $AWS_DEFAULT_REGION --name $CLUSTER_NAME
+    commands:
+      - echo "🔗 Connecting to EKS cluster..."
+      - aws eks update-kubeconfig --region $AWS_DEFAULT_REGION --name $CLUSTER_NAME
 
-    - echo "🔐 Verifying CodeBuild IAM identity and EKS token..."
-    - aws sts get-caller-identity
-    - aws eks get-token --region $AWS_DEFAULT_REGION --cluster-name $CLUSTER_NAME > /dev/null
+      - echo "🔐 Verifying CodeBuild IAM identity and EKS token..."
+      - aws sts get-caller-identity
+      - aws eks get-token --region $AWS_DEFAULT_REGION --cluster-name $CLUSTER_NAME > /dev/null
 
-    - echo "📝 Updating image tag in deployment.yaml..."
-    - 'sed -i "s|image: .*|image: 779846799257.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com/${IMAGE_REPO_NAME}:${IMAGE_TAG}|g" ${K8S_FOLDER}/deployment.yaml'
+      - echo "📝 Updating image tag in deployment.yaml..."
+      - 'sed -i "s|image: .*|image: 779846799257.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com/${IMAGE_REPO_NAME}:${IMAGE_TAG}|g" ${K8S_FOLDER}/deployment.yaml'
 
-    - echo "🚀 Applying all Kubernetes manifests..."
-    - kubectl apply -f $K8S_FOLDER/ --validate=false
+      - echo "🚀 Applying all Kubernetes manifests..."
+      - kubectl apply -f $K8S_FOLDER/ --validate=false
 
-    - echo "⏳ Waiting for deployment rollout..."
-    - kubectl rollout status deployment/react-frontend || true
+      - echo "⏳ Waiting for deployment rollout..."
+      - kubectl rollout status deployment/react-frontend || true
 
-    - echo "✅ All Kubernetes manifests applied successfully!"
-    - kubectl get all
+      - echo "✅ All Kubernetes manifests applied successfully!"
+      - kubectl get all
