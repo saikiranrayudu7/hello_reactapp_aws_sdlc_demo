@@ -1,9 +1,11 @@
 apiVersion: policy/v1
 kind: PodDisruptionBudget
 metadata:
-  name: react-app-pdb
+  name: react-frontend-pdb                  # ✅ consistent naming
+  labels:
+    app: react-frontend
 spec:
-  minAvailable: 2
+  minAvailable: 2                           # ✅ ensures at least 2 Pods stay running
   selector:
     matchLabels:
-      app: react-app
+      app: react-frontend                   # ✅ must match Deployment label

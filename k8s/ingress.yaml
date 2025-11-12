@@ -1,9 +1,11 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: react-app-ingress
+  name: react-frontend-ingress                   # ✅ updated for consistency
+  labels:
+    app: react-frontend
   annotations:
-    kubernetes.io/ingress.class: nginx
+    kubernetes.io/ingress.class: nginx           # ✅ for NGINX ingress controller
 spec:
   rules:
     - http:
@@ -12,6 +14,6 @@ spec:
             pathType: Prefix
             backend:
               service:
-                name: react-app-service
+                name: react-frontend-service     # ✅ matches service.yaml
                 port:
                   number: 80

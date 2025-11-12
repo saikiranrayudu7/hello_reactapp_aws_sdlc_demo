@@ -1,14 +1,14 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: react-app-deployment
+  name: react-frontend                      # ✅ matches kubectl rollout command
   labels:
-    app: react-app
+    app: react-frontend
 spec:
   replicas: 3
   selector:
     matchLabels:
-      app: react-app
+      app: react-frontend
   strategy:
     type: RollingUpdate
     rollingUpdate:
@@ -17,11 +17,11 @@ spec:
   template:
     metadata:
       labels:
-        app: react-app
+        app: react-frontend
     spec:
       containers:
-        - name: react-app-container
-          image: 779846799257.dkr.ecr.us-east-1.amazonaws.com/react-app-repo:latest
+        - name: react-frontend-container     # ✅ consistent with deployment name
+          image: 779846799257.dkr.ecr.us-east-1.amazonaws.com/react-app-repo:latest   # ✅ sed replaces this line dynamically
           ports:
             - containerPort: 80
           readinessProbe:
