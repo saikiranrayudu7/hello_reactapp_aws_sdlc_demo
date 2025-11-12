@@ -1,12 +1,13 @@
 version: 0.2
 
+privileged: true
+
 env:
   variables:
     IMAGE_REPO_NAME: "react-app-repo"               # ECR repository name
     AWS_DEFAULT_REGION: "us-east-1"                 # Your AWS region
     CLUSTER_NAME: "react-app-cluster"               # Your EKS cluster name
-    K8S_FOLDER: "k8s"                               # Folder containing YAML files
-  privileged: true                                  # Needed for Docker builds
+    K8S_FOLDER: "k8s"                               # Folder containing YAML files 
 
 phases:
   install:
