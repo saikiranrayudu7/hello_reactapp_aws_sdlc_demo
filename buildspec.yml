@@ -1,25 +1,21 @@
 version: 0.2
 
-privileged: true
-
 env:
   variables:
-    IMAGE_REPO_NAME: "react-app-repo"               # ECR repository name
-    AWS_DEFAULT_REGION: "us-east-1"                 # Your AWS region
-    CLUSTER_NAME: "react-app-cluster"               # Your EKS cluster name
-    K8S_FOLDER: "k8s"                               # Folder containing YAML files 
+    IMAGE_REPO_NAME: "react-app-repo"
+    AWS_DEFAULT_REGION: "us-east-1"
+    CLUSTER_NAME: "react-app-cluster"
+    K8S_FOLDER: "k8s"
 
 phases:
   install:
-    runtime-versions:
-      docker: 20
     commands:
-      - echo "🔧 Installing kubectl and aws-iam-authenticator..."
+      - echo "Installing kubectl and aws-iam-authenticator..."
       - curl -o kubectl https://amazon-eks.s3.us-west-2.amazonaws.com/1.29.0/2024-06-14/bin/linux/amd64/kubectl
       - chmod +x ./kubectl && mv ./kubectl /usr/local/bin/
       - curl -Lo aws-iam-authenticator https://amazon-eks.s3.us-west-2.amazonaws.com/1.29.0/2024-06-14/bin/linux/amd64/aws-iam-authenticator
       - chmod +x aws-iam-authenticator && mv aws-iam-authenticator /usr/local/bin/
-      - echo "✅ Installation complete."
+      - echo "✅ Installation complete"
 
   pre_build:
     commands:
