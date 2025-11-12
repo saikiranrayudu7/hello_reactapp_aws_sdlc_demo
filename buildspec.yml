@@ -11,12 +11,8 @@ phases:
   install:
     commands:
       - echo "Installing kubectl and aws-iam-authenticator..."
-      # Use the reliable Kubernetes official download link
       - curl -LO https://dl.k8s.io/release/v1.29.0/bin/linux/amd64/kubectl
       - chmod +x ./kubectl && mv ./kubectl /usr/local/bin/
-      
-      # Retain the EKS-specific link for aws-iam-authenticator but be aware 
-      # it might also need verification if the build fails again.
       - curl -Lo aws-iam-authenticator https://amazon-eks.s3.us-west-2.amazonaws.com/1.29.0/2024-06-14/bin/linux/amd64/aws-iam-authenticator
       - chmod +x aws-iam-authenticator && mv aws-iam-authenticator /usr/local/bin/
       - echo "✅ Installation complete"
@@ -48,15 +44,11 @@ phases:
       - echo "🔗 Connecting to EKS cluster..."
       - aws eks update-kubeconfig --region $AWS_DEFAULT_REGION --name $CLUSTER_NAME
 
-      - echo "🔐 Verifying cluster authentication..."
-      - aws eks get-token --region $AWS_DEFAULT_REGION --cluster-name $CLUSTER_NAME > /dev/null
-      - kubectl get nodes
-
       - echo "📝 Updating image tag in deployment.yaml..."
       - 'sed -i "s|image: .*|image: 779846799257.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com/${IMAGE_REPO_NAME}:${IMAGE_TAG}|g" ${K8S_FOLDER}/deployment.yaml'
 
-      - echo "🚀 Applying all Kubernetes manifests (with validation disabled)..."
-      - kubectl apply -f $K8S_FOLDER/ --validate=false
+      - echo "🚀 Applying all Kubernetes manifests..."
+      - kubectl apply -f $K8S_FOLDER/
 
       - echo "⏳ Waiting for deployment rollout..."
       - kubectl rollout status deployment/react-frontend || true
@@ -64,3 +56,12 @@ phases:
       - echo "✅ All Kubernetes manifests applied successfully!"
       - kubectl get all
 
+      # 🎯 NEW SECTION - print LoadBalancer URL
+      - echo "🌐 Fetching LoadBalancer URL..."
+      - |
+        EXTERNAL_IP=$(kubectl get svc react-frontend-service -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
+        if [ -z "$EXTERNAL_IP" ]; then
+          echo "❌ No LoadBalancer URL found yet. It might take 1–2 minutes for AWS to allocate it."
+        else
+          echo "✅ Your React app is live at: http://$EXTERNAL_IP"
+        fi
