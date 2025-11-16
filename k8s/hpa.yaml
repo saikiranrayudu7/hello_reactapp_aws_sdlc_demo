@@ -2,6 +2,7 @@ apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
 metadata:
   name: react-frontend-hpa                     # ✅ renamed for consistency
+  namespace: dev
   labels:
     app: react-frontend
 spec:

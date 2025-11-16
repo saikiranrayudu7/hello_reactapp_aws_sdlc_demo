@@ -2,6 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: react-frontend                      # ✅ matches kubectl rollout command
+  namespace: dev
   labels:
     app: react-frontend
 spec:
