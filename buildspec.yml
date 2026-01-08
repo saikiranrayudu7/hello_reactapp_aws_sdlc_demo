@@ -10,12 +10,11 @@ phases:
     commands:
       - echo Logging in to Amazon ECR...
       - aws --version
-      - aws ecr get-login-password --region $REGION |
-        docker login --username AWS --password-stdin $REPOSITORY_URI
+      - sh -c "aws ecr get-login-password --region $REGION | docker login --username AWS --password-stdin $REPOSITORY_URI"
 
   pre_build:
     commands:
-      - echo Pre-build: setting image tag...
+      - echo Generating image tag from commit...
       - IMAGE_TAG=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)
       - echo IMAGE_TAG=$IMAGE_TAG
       - export IMAGE_TAG
@@ -24,11 +23,9 @@ phases:
     commands:
       - echo Building Docker image...
       - docker build -t $REPOSITORY_URI:$IMAGE_TAG .
-      - docker tag $REPOSITORY_URI:$IMAGE_TAG $REPOSITORY_URI:latest
 
   post_build:
     commands:
-      - echo Pushing Docker images to ECR...
+      - echo Pushing versioned image to ECR...
       - docker push $REPOSITORY_URI:$IMAGE_TAG
-      - docker push $REPOSITORY_URI:latest
       - echo Build completed successfully
