@@ -1,6 +1,0 @@
-[
-  {
-    "name": "react-app-cluster",
-    "imageUri": "779846799257.dkr.ecr.us-east-1.amazonaws.com/react-app-repo:latest"
-  }
-]
