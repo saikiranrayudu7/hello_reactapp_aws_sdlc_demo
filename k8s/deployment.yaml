@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: react-app
-  namespace: dev
+  namespace: react
 spec:
   replicas: 2
   selector:
@@ -15,13 +15,6 @@ spec:
     spec:
       containers:
         - name: react-app
-          image: 779846799257.dkr.ecr.us-east-1.amazonaws.com/react-app-repo:latest
+          image: 779846799257.dkr.ecr.us-east-1.amazonaws.com/react-app-repo:<IMAGE_TAG>
           ports:
             - containerPort: 80
-          resources:
-            requests:
-              cpu: 100m
-              memory: 128Mi
-            limits:
-              cpu: 500m
-              memory: 256Mi
